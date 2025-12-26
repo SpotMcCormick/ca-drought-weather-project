@@ -1,9 +1,0 @@
-version: 2
-
-sources:
-  - name: drought_weather_data
-    database: awsdatacatalog
-    schema: ca_drought_rain
-    tables:
-      - name: ca_county_drought
-      - name: ca_historic_weather
