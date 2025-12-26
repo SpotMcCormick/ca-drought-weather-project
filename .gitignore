@@ -1,0 +1,14 @@
+aws secret access key.txt
+.aws/
+.aws/spark-jars/
+**/__pycache__/
+etl/ai-initial-load/
+spark-jars/*.jar
+logs/
+logs/*.log
+.env
+.idea/
+.~lock.*
+*.lock
+data/*.csv
+data/*.zip
