@@ -2,7 +2,6 @@ name: 'drought_transformations'
 version: '1.0.0'
 config-version: 2
 
-# This must match the name in your ~/.dbt/profiles.yml
 profile: 'athena_dbt'
 
 model-paths: ["models"]
@@ -13,3 +12,4 @@ target-path: "target"
 models:
   drought_transformations:
     +materialized: table
+    
