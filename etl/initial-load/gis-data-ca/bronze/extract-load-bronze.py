@@ -3,26 +3,25 @@ import requests
 import datetime as dt
 import boto3
 
-
-
+#logging config
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename=r"/run/media/jeremymccormick/ssd-storage/drought-etl/logs/ca-gis-county-log",
+    filename=r"../../../../logs/ca-gis-county-log",
     level=logging.INFO
 )
-
+ #used for filename
 file_date = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-
+#aws config
 aws_bucket = 'drought-data-lake'
 aws_key = f'gis-ca-county/initial-load/bronze/data/{file_date}_data.zip'
 
-
+#extract function
 def extract_ca_county_data(url):
     '''
-    Description: Gets data from a url
-    :param url: API endpoing url
-    :return:Json data or no data (none)
+    Description: Gets data from a api
+    :param url: API endpoint url
+    :return:Json data or no data
     '''
     url = url
     logging.info(f'attempting to call the api here {url}')
@@ -42,11 +41,12 @@ def extract_ca_county_data(url):
         logging.error(f'API call failed from {url}', exc_info=True)
         return None
 
+#upload function
 def upload_to_s3(data):
     '''
     Description: Upload data to AWS bucket
     :param json_data:  the data collected from the API endpoint
-    :return: Json data into s3 bucket or no data (none)
+    :return: Uploaded json data into s3 bucket or no data
     '''
     try:
         logging.info(f"communicating with {aws_bucket}")
@@ -62,9 +62,6 @@ def upload_to_s3(data):
     except Exception as e:
         logging.error(f'error wth {e}', exc_info=True)
         return False
-
-
-
 
 #example usage
 if __name__== "__main__":

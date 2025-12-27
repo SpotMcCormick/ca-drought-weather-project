@@ -1,34 +1,29 @@
 import sys
-import logging
-import boto3
 
-# --- THE PATH FIX ---
-# Adjust this to point to the 'etl' folder where your config.py lives
 sys.path.append('/run/media/jeremymccormick/ssd-storage/drought-etl/etl')
 
 from config import get_spark_session
-
+import logging
+import boto3
 from pyspark.sql.functions import col, to_date, year
 
-# --- Logging Setup ---
+#logging configs
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='../../../../logs/initial-load.log',  # Keeps your existing log path
+    filename='../../../../logs/initial-load.log',
     level=logging.INFO
 )
 
-# --- AWS & Spark Initialization ---
-# This one call replaces all the os.environ, boto3 credential fetching, and Spark builder blocks
+#spark config
 spark = get_spark_session("silver-transformation-iceberg-drought")
 
-# These stay for the S3 client extraction
+#aws config
 s3 = boto3.client('s3')
 aws_bucket = 'drought-data-lake'
 prefix = 'drought-us-monitor/initial-load/bronze/data/'
 
 
-# --- ETL Functions ---
-
+#extract function
 def extract_bronze():
     '''
     Description: extracting the bronze raw data from the s3 bucket
@@ -44,7 +39,6 @@ def extract_bronze():
         logging.info("getting most recent file")
         max_obj = max(response['Contents'], key=lambda x: x['LastModified'])
 
-        # We use s3a:// for Spark to read from S3
         s3_path = f"s3a://{aws_bucket}/{max_obj['Key']}"
         logging.info(f"making {s3_path} into a spark dataframe")
 
@@ -54,10 +48,12 @@ def extract_bronze():
         logging.error(f"error with extraction: {e}", exc_info=True)
         return None
 
-
+#transform function
 def transform_s3_data(df):
     '''
     Description: Transforming data of our json
+    :param df: json file we are transforming
+    :return: transformed dataframe
     '''
     if df is None: return None
     try:
@@ -75,10 +71,13 @@ def transform_s3_data(df):
         logging.error("no data to transform", exc_info=True)
         return None
 
-
+#load function
 def load_to_iceberg(df, database, table_name):
     '''
-    Description: loading the data to an iceberg table format in aws for analytics
+    Description: loading the transformed data into iceberg table
+    :param df: dataframe we are loading
+    :param database: the database we are loading
+    :param table_name: what the table we are loading
     '''
     if df is None: return
     try:
@@ -101,7 +100,7 @@ def load_to_iceberg(df, database, table_name):
         logging.error("error on creating db/writing table", exc_info=True)
 
 
-# --- Execution ---
+#example usage
 if __name__ == "__main__":
     df_bronze = extract_bronze()
     df_silver = transform_s3_data(df_bronze)

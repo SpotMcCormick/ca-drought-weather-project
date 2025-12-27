@@ -4,17 +4,22 @@ import boto3
 from pyspark.sql import SparkSession
 
 def get_spark_session(app_name):
-    # --- System Environment Setup ---
+    '''
+    Description: Got tired of pasting my spark session params over and over again.
+    :param app_name: name you want to call your spark session
+    :return: spark session parameters
+    '''
+    #java and py set up
     os.environ['JAVA_HOME'] = '/opt/java-11'
     os.environ.pop('SPARK_HOME', None)
     os.environ['PYSPARK_PYTHON'] = sys.executable
     os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 
-    # --- AWS Credentials ---
+    #aws configs for spark set up
     session = boto3.Session()
     credentials = session.get_credentials().get_frozen_credentials()
 
-    # --- Jar Management ---
+    # jar's for spark set up
     jar_base = "/run/media/jeremymccormick/ssd-storage/drought-etl/spark-jars"
     jars = [
         f"{jar_base}/hadoop-aws-3.3.4.jar",
@@ -23,7 +28,6 @@ def get_spark_session(app_name):
         f"{jar_base}/iceberg-aws-bundle-1.4.3.jar"
     ]
 
-    # --- Spark Session Builder ---
     return SparkSession.builder \
         .appName(app_name) \
         .config("spark.driver.memory", "6g") \

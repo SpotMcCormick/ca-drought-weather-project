@@ -1,8 +1,8 @@
 import sys
 import os
 
-# This adds the main project directory to the python path
 sys.path.append('/run/media/jeremymccormick/ssd-storage/drought-etl/etl')
+
 import logging
 import gc
 import awswrangler as wr
@@ -11,26 +11,32 @@ from datetime import datetime, timedelta
 from meteostat import Point, Daily, units
 from pyspark.sql import functions as F
 
-# Import the uniform session from config
 from config import get_spark_session
 
-# --- Setup ---
+#logging config
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='/run/media/jeremymccormick/ssd-storage/drought-etl/logs/initial-load-weather.log',
+    filename='../../../../logs/initial-load-weather.log',
     level=logging.INFO
 )
 
-# Initialize Spark using the uniform config
+#spark config
 spark = get_spark_session("silver-transformation-iceberg")
 
+#params for query
 start = datetime(2000, 1, 1)
 end = datetime.now() - timedelta(days=1)
 
 
-# --- ETL Logic ---
-
-def extract_silver_data_to_dataframe(query: str, db: str, output: str) -> pd.DataFrame:
+# extract functions
+def extract_silver_data_to_dataframe(query, db, output) :
+    '''
+    Description: our CA shapefile has the boundries and the center lat, lon of each county. We are pulling that data to get the weather data.
+    :param query: sql query from the athena db
+    :param db: the database you are pulling from
+    :param output: the output directory of your athena query
+    :return: dataframe
+    '''
     try:
         logging.info(f"executing query against database: {db}")
         df = wr.athena.read_sql_query(sql=query, database=db, s3_output=output, ctas_approach=False)
@@ -42,6 +48,13 @@ def extract_silver_data_to_dataframe(query: str, db: str, output: str) -> pd.Dat
 
 
 def extract_weather_data(df, start_date, end_date):
+    '''
+    Description: Extracting data from the meteostat python library. Looping through the coordinates of the dataframe.
+    :param df: dataframe we are using to get coordinates from
+    :param start_date: date of the historic weather data you want to start from
+    :param end_date: date of the historic weather data you want to end from
+    :return: dataframe with historical weather
+    '''
     data_list = []
     logging.info("looping through weather data")
     for index, row in df.iterrows():
@@ -61,12 +74,16 @@ def extract_weather_data(df, start_date, end_date):
 
     return pd.concat(data_list, ignore_index=True) if data_list else pd.DataFrame()
 
-
+#transform fuction
 def transform_weather_data(df):
+    '''
+    Description: transforming the meteostat data to make the naming convention better and partition it for iceberg.
+    :param df: dataframe you want to transform
+    :return: clean dataframe
+    '''
     if df.empty:
         return df
 
-    # 1. Rename columns
     df = df.rename(columns={
         df.columns[0]: "date",
         "tavg": "temperature_average",
@@ -80,12 +97,10 @@ def transform_weather_data(df):
         "tsun": "daily_sun_minutes"
     })
 
-    # 2. DateTime conversion and Tuesday (map_date) logic
     df['date'] = pd.to_datetime(df['date'])
     days_to_subtract = (df['date'].dt.dayofweek - 1) % 7
     df['map_date'] = df['date'] - pd.to_timedelta(days_to_subtract, unit='d')
 
-    # 3. Cast to Date objects for Iceberg DateType compatibility
     df['date'] = df['date'].dt.date
     df['map_date'] = df['map_date'].dt.date
 
@@ -93,6 +108,12 @@ def transform_weather_data(df):
 
 
 def load_to_iceberg(df, database, table_name):
+    '''
+    Description: loading the transformed data into iceberg table
+    :param df: dataframe we are loading
+    :param database: the database we are loading
+    :param table_name: what the table we are loading
+    '''
     try:
         logging.info("Starting Iceberg Load process...")
 
