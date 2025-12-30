@@ -25,7 +25,7 @@ spark = get_spark_session("silver-transformation-iceberg")
 
 #params for query
 start = datetime(2000, 1, 1)
-end = datetime.now() - timedelta(days=1)
+end = datetime.now() - timedelta(days=7)
 
 
 # extract functions

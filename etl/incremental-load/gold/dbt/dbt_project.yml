@@ -12,4 +12,3 @@ target-path: "target"
 models:
   drought_transformations:
     +materialized: table
-    

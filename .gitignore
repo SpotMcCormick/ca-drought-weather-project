@@ -16,3 +16,4 @@ data/*.zip
 **/dbt_packages/
 **/dbt_modules/
 **/logs/
+airflow/.env
