@@ -10,11 +10,9 @@ from pyspark.sql import functions as F
 Point.radius = 100000
 
 from etl.config import get_spark_session
-from etl.spark_helpers import double_nan_as_null
 
 logger = logging.getLogger(__name__)
-logger = logging.getLogger(__name__)
-logger = logging.getLogger(__name__)
+
 
 
 def extract_silver_data_to_dataframe(query, db, output):
@@ -35,21 +33,12 @@ def extract_weather_data(df, start_date, end_date):
     for index, row in df.iterrows():
         try:
             point = Point(row['lat'], row['lon'])
-
-            # ATTEMPT 1: Exact day
             daily_data = Daily(point, start_date, end_date).convert(units.imperial).fetch()
 
-            # ATTEMPT 2: 1-day range fallback (The fix from your scratch script)
             if daily_data.empty:
-                daily_data = Daily(point, start_date, end_date + timedelta(days=1)).convert(units.imperial).fetch()
-
-            if daily_data.empty:
-                logger.warning(f"No data returned for {row['county_name']}")
                 continue
 
             df_weather = daily_data.reset_index()
-
-            # Ensure we only keep the row for our target date if a range was used
             df_weather = df_weather[df_weather['time'].dt.date == start_date.date()]
 
             if df_weather.empty:
@@ -69,7 +58,6 @@ def extract_weather_data(df, start_date, end_date):
 
 def transform_weather_data(df):
     if df.empty:
-        logger.warning("Empty dataframe received for transformation")
         return df
 
     logger.info("Transforming weather data")
@@ -101,7 +89,13 @@ def load_to_iceberg(spark, df, database, table_name):
         cols = df.select_dtypes(exclude=['datetime64[ns]', 'object']).columns
         df[cols] = df[cols].apply(pd.to_numeric, errors='coerce').astype(float)
 
-        spark_df = double_nan_as_null(spark.createDataFrame(df))
+        spark_df = spark.createDataFrame(df)
+        for field in spark_df.schema.fields:
+            if field.dataType.typeName() in ("double", "float"):
+                c = field.name
+                spark_df = spark_df.withColumn(
+                    c, F.nanvl(F.col(c), F.lit(None).cast(field.dataType))
+                )
         del df
         gc.collect()
 
@@ -148,7 +142,7 @@ def run_incremental_load():
         weather_df = extract_weather_data(df_coords, target_day, target_day)
 
         if weather_df.empty:
-            logger.error("No weather data collected - aborting")
+            logger.info("No weather rows this run; nothing to load.")
             return
 
         final_df = transform_weather_data(weather_df)

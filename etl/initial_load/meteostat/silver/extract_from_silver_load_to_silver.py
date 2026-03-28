@@ -13,7 +13,6 @@ from pyspark.sql import functions as F
 from pathlib import Path
 
 from config import get_spark_session
-from spark_helpers import double_nan_as_null
 
 root_dir = Path(__file__).parent.parent.parent.parent.parent
 
@@ -130,7 +129,13 @@ def load_to_iceberg(df, database, table_name):
         cols = df.select_dtypes(exclude=['datetime64[ns]', 'object']).columns
         df[cols] = df[cols].apply(pd.to_numeric, errors='coerce').astype(float)
 
-        spark_df = double_nan_as_null(spark.createDataFrame(df))
+        spark_df = spark.createDataFrame(df)
+        for field in spark_df.schema.fields:
+            if field.dataType.typeName() in ("double", "float"):
+                c = field.name
+                spark_df = spark_df.withColumn(
+                    c, F.nanvl(F.col(c), F.lit(None).cast(field.dataType))
+                )
 
         # Memory Management: wipe Pandas immediately
         del df
