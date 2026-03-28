@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from meteostat import Point, Daily, units
 from pyspark.sql import functions as F
 
-# 1. Global Config: Expand radius to find remote stations
 Point.radius = 100000
 
 from etl.config import get_spark_session
@@ -130,13 +129,14 @@ def run_incremental_load():
     try:
         spark = get_spark_session("weather-incremental")
 
-        # Consistent with your successful scratch test
-        target_day = (datetime.now() - timedelta(days=14)).replace(hour=0, minute=0, second=0, microsecond=0)
+        target_day = (datetime.now() - timedelta(days=14)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
 
         df_coords = extract_silver_data_to_dataframe(
             query="SELECT * FROM ca_counties",
-            db='ca_drought_rain',
-            output='s3://drought-data-lake/athena-query-results/'
+            db="ca_drought_rain",
+            output="s3://drought-data-lake/athena-query-results/",
         )
 
         weather_df = extract_weather_data(df_coords, target_day, target_day)
@@ -146,7 +146,7 @@ def run_incremental_load():
             return
 
         final_df = transform_weather_data(weather_df)
-        load_to_iceberg(spark, final_df, 'ca_drought_rain', 'ca_historic_weather')
+        load_to_iceberg(spark, final_df, "ca_drought_rain", "ca_historic_weather")
         logger.info("✓ Incremental load completed successfully")
 
     except Exception as e:

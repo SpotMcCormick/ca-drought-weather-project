@@ -1,0 +1,20 @@
+# Spark settings (no paths — JAVA_HOME and jars stay in config.py).
+spark:
+  java_home: /opt/java-11
+  jar_base: spark-jars
+  jars:
+    - hadoop-aws-3.3.4.jar
+    - aws-java-sdk-bundle-1.12.262.jar
+    - iceberg-spark-runtime-3.5_2.12-1.4.3.jar
+    - iceberg-aws-bundle-1.4.3.jar
+  configs:
+    spark.driver.memory: 6g
+    spark.executor.memory: 6g
+    spark.memory.offHeap.enabled: "true"
+    spark.memory.offHeap.size: 2g
+    spark.sql.extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+    spark.sql.catalog.glue_catalog: org.apache.iceberg.spark.SparkCatalog
+    spark.sql.catalog.glue_catalog.catalog-impl: org.apache.iceberg.aws.glue.GlueCatalog
+    spark.sql.catalog.glue_catalog.warehouse: s3://drought-data-lake/iceberg-warehouse
+    spark.sql.catalog.glue_catalog.io-impl: org.apache.iceberg.aws.s3.S3FileIO
+    spark.hadoop.fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
