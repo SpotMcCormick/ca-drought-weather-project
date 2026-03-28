@@ -6,12 +6,17 @@ from config import get_spark_session
 import logging
 import boto3
 from pyspark.sql.functions import col, to_date, year
+from pathlib import Path
 
+root_dir = Path(__file__).parent.parent.parent.parent.parent
 #logging configs
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='../../../../logs/initial-load.log',
-    level=logging.INFO
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler(root_dir / 'logs/initial-load.log'),
+        logging.StreamHandler()
+    ]
 )
 
 #spark config

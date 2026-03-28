@@ -5,8 +5,7 @@ SELECT
     sum(w.precipitation) as weekly_percipitation,
     avg(w.temperature_average) as weekly_avg_temperature,
     avg(w.wind_speed) as weekly_avg_winspeed,
-    sum(w.snow) as weekly_snow,
-    sum(w.daily_sun_minutes) as weekly_sun_minutes
+    avg(w.pressure) as weekly_avg_pressure
 
 FROM {{ source('drought_weather_data', 'ca_county_drought') }} d
 JOIN {{ source('drought_weather_data', 'ca_historic_weather') }} w

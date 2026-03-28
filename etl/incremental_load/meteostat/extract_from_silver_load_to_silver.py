@@ -10,6 +10,7 @@ from pyspark.sql import functions as F
 Point.radius = 100000
 
 from etl.config import get_spark_session
+from etl.spark_helpers import double_nan_as_null
 
 logger = logging.getLogger(__name__)
 logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ def load_to_iceberg(spark, df, database, table_name):
         cols = df.select_dtypes(exclude=['datetime64[ns]', 'object']).columns
         df[cols] = df[cols].apply(pd.to_numeric, errors='coerce').astype(float)
 
-        spark_df = spark.createDataFrame(df)
+        spark_df = double_nan_as_null(spark.createDataFrame(df))
         del df
         gc.collect()
 

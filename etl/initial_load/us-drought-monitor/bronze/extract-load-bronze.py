@@ -3,11 +3,17 @@ import logging
 import requests
 import datetime as dt
 import boto3
+from pathlib import Path
+
+root_dir = Path(__file__).parent.parent.parent.parent.parent
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='../../../../logs/initial-load-drought.log',
-    level=logging.INFO
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler(root_dir / 'logs/initial-load-drought.log'),
+        logging.StreamHandler()
+    ]
 )
 
 end_date = dt.datetime.now().strftime("%m/%d/%Y")

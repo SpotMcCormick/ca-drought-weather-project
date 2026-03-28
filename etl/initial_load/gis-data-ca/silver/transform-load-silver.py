@@ -11,10 +11,12 @@ from pathlib import Path
 
 from config import get_spark_session
 
+
+root_dir = Path(__file__).parent.parent.parent.parent.parent
 # logging config
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='../../../../logs/ca-gis-county-log',
+    filename= root_dir / "logs/ca-gis-county-log",
     level=logging.INFO
 )
 
@@ -119,3 +121,4 @@ if __name__ == "__main__":
     df_silver = transform_silver(gdf_bronze)
     load_to_iceberg(df_silver, 'ca_drought_rain', 'ca_counties')
     spark.stop()
+    print("example usage worked!")

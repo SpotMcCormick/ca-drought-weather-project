@@ -10,14 +10,23 @@ import pandas as pd
 from datetime import datetime, timedelta
 from meteostat import Point, Daily, units
 from pyspark.sql import functions as F
+from pathlib import Path
 
 from config import get_spark_session
+from spark_helpers import double_nan_as_null
+
+root_dir = Path(__file__).parent.parent.parent.parent.parent
+
+
 
 #logging config
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename='../../../../logs/initial-load-weather.log',
-    level=logging.INFO
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler(root_dir / 'logs/initial-load-weather.log'),
+        logging.StreamHandler()
+    ]
 )
 
 #spark config
@@ -121,8 +130,7 @@ def load_to_iceberg(df, database, table_name):
         cols = df.select_dtypes(exclude=['datetime64[ns]', 'object']).columns
         df[cols] = df[cols].apply(pd.to_numeric, errors='coerce').astype(float)
 
-        # Convert to Spark
-        spark_df = spark.createDataFrame(df)
+        spark_df = double_nan_as_null(spark.createDataFrame(df))
 
         # Memory Management: wipe Pandas immediately
         del df

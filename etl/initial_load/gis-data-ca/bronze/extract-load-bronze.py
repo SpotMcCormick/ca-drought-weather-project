@@ -2,11 +2,14 @@ import logging
 import requests
 import datetime as dt
 import boto3
+from pathlib import Path
+
+root_dir = Path(__file__).parent.parent.parent.parent.parent
 
 #logging config
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    filename=r"../../../../logs/ca-gis-county-log",
+    filename= root_dir / "logs/ca-gis-county-log",
     level=logging.INFO
 )
  #used for filename
