@@ -18,4 +18,4 @@ data/*.zip
 **/logs/
 airflow/.env
 drought_etl.egg-info/
-etl/initial_load
+etl/initial_load/
