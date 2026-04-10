@@ -17,3 +17,5 @@ data/*.zip
 **/dbt_modules/
 **/logs/
 airflow/.env
+drought_etl.egg-info
+incremental-load
