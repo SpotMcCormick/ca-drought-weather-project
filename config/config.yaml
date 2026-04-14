@@ -6,6 +6,7 @@ aws:
   bronze_keys:
     us_drought_monitor: drought-us-monitor/incremental-load/bronze/data/{file_date}_data.json
     gis_ca_county: gis-ca-county/incremental-load/bronze/data/{file_date}_data.zip
+    gis_silver_input: gis-ca-county/incremental-load/bronze/data/
   silver_keys:
     us_drought_monitor_input: drought-us-monitor/incremental-load/bronze/data/
     us_drought_monitor_output: drought-us-monitor/incremental-load/silver/data/{file_date}_data.parquet

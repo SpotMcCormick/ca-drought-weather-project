@@ -10,9 +10,6 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 
 with open(BASE_DIR / 'config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
- 
-
-
 
 #logging configs
 logging.basicConfig(
@@ -114,6 +111,7 @@ def load_to_iceberg(df, database, table_name):
 if __name__ == "__main__":
     df_bronze = extract_bronze()
     df_silver = transform_s3_data(df_bronze)
+    
 
     if df_silver:
         load_to_iceberg(df_silver, "ca_drought_rain", "ca_county_drought")
