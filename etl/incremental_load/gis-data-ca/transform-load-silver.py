@@ -10,18 +10,12 @@ from etl.spark_config import get_spark_session
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 
-# logging config
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    filename= BASE_DIR / "logs/ca-gis-county-log",
-    level=logging.INFO
-)
-
 # spark donfig
 spark = get_spark_session("silver-transformation-iceberg-gis")
 
 with open(BASE_DIR / 'config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
+logger = logging.getLogger(__name__)
 
 #aws config
 s3 = boto3.client('s3')
@@ -36,14 +30,14 @@ def extract_bronze():
     Description: extracting the bronze raw data from the s3 bucket and turning the shapefile into a geopandas dataframe
     '''
     try:
-        logging.info("getting data from s3 bucket")
+        logger.info("getting data from s3 bucket")
         response = s3.list_objects_v2(Bucket=aws_bucket, Prefix=prefix)
 
         if 'Contents' not in response:
-            logging.error(f"No files found at {prefix}")
+            logger.error(f"No files found at {prefix}")
             raise ValueError("Bronze layer is empty")
 
-        logging.info("getting most recent file")
+        logger.info("getting most recent file")
         max_obj = max(response['Contents'], key=lambda x: x['LastModified'])
         s3_key = max_obj['Key']
 
@@ -64,7 +58,7 @@ def extract_bronze():
             return gdf
 
     except Exception as e:
-        logging.error(f"error extracting bronze: {e}", exc_info=True)
+        logger.error(f"error extracting bronze: {e}", exc_info=True)
         return None
 
 #transform function
@@ -87,7 +81,7 @@ def transform_silver(gdf):
         df['lon'] = df['lon'].astype(float)
         return df
     except Exception as e:
-        logging.error(f"error transforming data: {e}", exc_info=True)
+        logger.error(f"error transforming data: {e}", exc_info=True)
         return None
 
 #load function
@@ -109,10 +103,10 @@ def load_to_iceberg(df, database, table_name):
             .using("iceberg") \
             .createOrReplace()
 
-        logging.info(f"successfully loaded {full_table_name}")
+        logger.info(f"successfully loaded {full_table_name}")
         return True
     except Exception as e:
-        logging.error(f"error loading to iceberg: {e}", exc_info=True)
+        logger.error(f"error loading to iceberg: {e}", exc_info=True)
         return False
 
 #example useage

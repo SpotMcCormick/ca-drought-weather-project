@@ -25,17 +25,9 @@ aws_bucket= config['aws']['aws_bucket']
 aws_key = config['aws']['bronze_keys']['us_drought_monitor']
 aws_key = aws_key.format(file_date=FILE_DATE)
 
+logger = logging.getLogger(__name__)
+
 drought_url = url.format(start_date=START_DATE, end_date=END_DATE)
-
-
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    handlers=[
-        logging.FileHandler(BASE_DIR / 'logs/initial-load-drought.log'),
-        logging.StreamHandler()
-    ]
-)
 
 def extract_drought_data(url):
     '''
@@ -45,21 +37,21 @@ def extract_drought_data(url):
     '''
     url = url
     headers = {'Accept': 'application/json'}
-    logging.info(f'attempting to call the api here {url}')
+    logger.info(f'attempting to call the api here {url}')
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        logging.info(f'getting data from {url}')
+        logger.info(f'getting data from {url}')
         try:
             json_data = response.json()
-            logging.info(f'got data from {url}')
+            logger.info(f'got data from {url}')
             return json_data
 
         except requests.exceptions.JSONDecodeError:
-            logging.error(f"can't reach {url}")
+            logger.error(f"can't reach {url}")
             return None
     else:
-        logging.error(f'API call failed from {url}', exc_info=True)
+        logger.error(f'API call failed from {url}', exc_info=True)
         return None
 
 def upload_to_s3(json_data):
@@ -69,7 +61,7 @@ def upload_to_s3(json_data):
     :return: Json data into s3 bucket or no data (none)
     '''
     try:
-        logging.info(f"communicating with {aws_bucket}")
+        logger.info(f"communicating with {aws_bucket}")
         s3 = boto3.client('s3')
 
         s3.put_object(
@@ -77,10 +69,10 @@ def upload_to_s3(json_data):
             Bucket= aws_bucket,
             Key=aws_key
             )
-        logging.info(f"loaded to {aws_bucket}/{aws_key}")
+        logger.info(f"loaded to {aws_bucket}/{aws_key}")
         return True
     except Exception as e:
-        logging.error(f'error wth {e}', exc_info=True)
+        logger.error(f'error wth {e}', exc_info=True)
         return False
 
 

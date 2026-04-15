@@ -11,3 +11,14 @@ aws:
     us_drought_monitor_input: drought-us-monitor/incremental-load/bronze/data/
     us_drought_monitor_output: drought-us-monitor/incremental-load/silver/data/{file_date}_data.parquet
     gis_ca_county: gis-ca-county/incremental-load/silver/data/{file_date}_data.parquet
+
+incremental_etl:
+  steps:
+    - us-drought-monitor/extract-load-bronze.py
+    - us-drought-monitor/transform-load-to-silver.py
+    - gis-data-ca/extract-load-bronze.py
+    - gis-data-ca/transform-load-silver.py
+    - meteostat/extract_from_silver_load_to_silver.py
+
+logging:
+  incremental_load_log_file: logs/incremental-load.log

@@ -9,14 +9,7 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 
 with open(BASE_DIR / 'config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
-
-
-#logging config
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    filename= BASE_DIR / "logs/ca-gis-county-log",
-    level=logging.INFO
-)
+logger = logging.getLogger(__name__)
  #used for filename
 file_date = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -33,21 +26,21 @@ def extract_ca_county_data(url):
     :return:Json data or no data
     '''
     url = url
-    logging.info(f'attempting to call the api here {url}')
+    logger.info(f'attempting to call the api here {url}')
     response = requests.get(url)
 
     if response.status_code == 200:
-        logging.info(f'getting data from {url}')
+        logger.info(f'getting data from {url}')
         try:
             data = response.content
-            logging.info(f'got data from {url}')
+            logger.info(f'got data from {url}')
             return data
 
         except Exception as e:
-            logging.error(f"error on {e}")
+            logger.error(f"error on {e}")
             return None
     else:
-        logging.error(f'API call failed from {url}', exc_info=True)
+        logger.error(f'API call failed from {url}', exc_info=True)
         return None
 
 #upload function
@@ -58,7 +51,7 @@ def upload_to_s3(data):
     :return: Uploaded json data into s3 bucket or no data
     '''
     try:
-        logging.info(f"communicating with {aws_bucket}")
+        logger.info(f"communicating with {aws_bucket}")
         s3 = boto3.client('s3')
 
         s3.put_object(
@@ -66,10 +59,10 @@ def upload_to_s3(data):
             Bucket= aws_bucket,
             Key=aws_key
             )
-        logging.info(f"loaded to {aws_bucket}/{aws_key}")
+        logger.info(f"loaded to {aws_bucket}/{aws_key}")
         return True
     except Exception as e:
-        logging.error(f'error wth {e}', exc_info=True)
+        logger.error(f'error wth {e}', exc_info=True)
         return False
 
 #example usage

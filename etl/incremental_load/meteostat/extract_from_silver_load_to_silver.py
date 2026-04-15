@@ -7,20 +7,13 @@ from meteostat import Point, Daily, units
 from pyspark.sql import functions as F
 from pathlib import Path
 from etl.spark_config import get_spark_session
+import yaml
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 
-
-
-#logging config
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    handlers=[
-        logging.FileHandler(BASE_DIR / 'logs/initial-load-weather.log'),
-        logging.StreamHandler()
-    ]
-)
+with open(BASE_DIR / "config/config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+logger = logging.getLogger(__name__)
 
 #spark config
 spark = get_spark_session("silver-transformation-iceberg")
@@ -41,12 +34,12 @@ def extract_silver_data_to_dataframe(query, db, output) :
     :return: dataframe
     '''
     try:
-        logging.info(f"executing query against database: {db}")
+        logger.info(f"executing query against database: {db}")
         df = wr.athena.read_sql_query(sql=query, database=db, s3_output=output, ctas_approach=False)
-        logging.info(f"query successful: {len(df)} rows returned")
+        logger.info(f"query successful: {len(df)} rows returned")
         return df
     except Exception as e:
-        logging.error(f"error executing athena query: {e}", exc_info=True)
+        logger.error(f"error executing athena query: {e}", exc_info=True)
         raise
 
 
@@ -59,7 +52,7 @@ def extract_weather_data(df, start_date, end_date):
     :return: dataframe with historical weather
     '''
     data_list = []
-    logging.info("looping through weather data")
+    logger.info("looping through weather data")
     for index, row in df.iterrows():
         try:
             point = Point(row['lat'], row['lon'])
@@ -72,7 +65,7 @@ def extract_weather_data(df, start_date, end_date):
             df_weather['county_name'] = row['county_name']
             data_list.append(df_weather)
         except Exception as e:
-            logging.error(f"Error for getting weather data for {row['county_name']}: {e}")
+            logger.error(f"Error for getting weather data for {row['county_name']}: {e}")
             continue
 
     return pd.concat(data_list, ignore_index=True) if data_list else pd.DataFrame()
@@ -118,7 +111,7 @@ def load_to_iceberg(df, database, table_name):
     :param table_name: what the table we are loading
     '''
     try:
-        logging.info("Starting Iceberg Load process...")
+        logger.info("Starting Iceberg Load process...")
 
         # Cleanup numeric types
         cols = df.select_dtypes(exclude=['datetime64[ns]', 'object']).columns
@@ -143,12 +136,12 @@ def load_to_iceberg(df, database, table_name):
         spark_df = spark_df.repartition("county_name", "year") \
             .sortWithinPartitions("county_name", "year")
 
-        logging.info(f"Creating database glue_catalog.{database} if not exists")
+        logger.info(f"Creating database glue_catalog.{database} if not exists")
         spark.sql(f"CREATE DATABASE IF NOT EXISTS glue_catalog.{database}")
 
         # Write to Iceberg
         full_table_path = f"glue_catalog.{database}.{table_name}"
-        logging.info(f"Writing data to {full_table_path}...")
+        logger.info(f"Writing data to {full_table_path}...")
 
         spark_df.writeTo(full_table_path) \
             .using("iceberg") \
@@ -157,10 +150,10 @@ def load_to_iceberg(df, database, table_name):
             .tableProperty("write.spark.fanout.enabled", "true") \
             .createOrReplace()
 
-        logging.info("Write complete.")
+        logger.info("Write complete.")
 
     except Exception as e:
-        logging.error(f"Failed to load to Iceberg: {e}", exc_info=True)
+        logger.error(f"Failed to load to Iceberg: {e}", exc_info=True)
 
 
 # Run ETL
