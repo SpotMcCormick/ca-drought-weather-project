@@ -86,5 +86,4 @@ if __name__== "__main__":
             upload_to_s3(data)
         except Exception as e:
             print (f'{e}')
-    else:
-        raise
+            raise
