@@ -156,7 +156,7 @@ def load_to_iceberg(df, database, table_name):
         logger.error(f"Failed to load to Iceberg: {e}", exc_info=True)
 
 
-# Run ETL
+#run
 if __name__ == "__main__":
     query = "SELECT * FROM ca_counties"
     df_coords = extract_silver_data_to_dataframe(

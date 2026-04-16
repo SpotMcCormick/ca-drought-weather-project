@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 
 with open(BASE_DIR / 'config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
+
 logger = logging.getLogger(__name__)
  #used for filename
 file_date = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -17,6 +18,7 @@ file_date = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
 aws_bucket= config['aws']['aws_bucket']
 aws_key = config['aws']['bronze_keys']['gis_ca_county']
 aws_key = aws_key.format(file_date=file_date)
+
 
 #extract function
 def extract_ca_county_data(url):
@@ -65,16 +67,14 @@ def upload_to_s3(data):
         logger.error(f'error wth {e}', exc_info=True)
         return False
 
-#example usage
+#run
 if __name__== "__main__":
-    url = "https://data.ca.gov/dataset/e212e397-1277-4df3-8c22-40721b095f33/resource/b0007416-a325-4777-9295-368ea6b710e6/download/ca_counties.zip"
-
+    url = config['endpoints']['ca_gis']['url']
     data = extract_ca_county_data(url)
     if data:
         try:
             upload_to_s3(data)
-            print("example usage worked!")
         except Exception as e:
             print (f'{e}')
     else:
-        print ("example usage failed!")
+        raise

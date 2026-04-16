@@ -9,7 +9,7 @@ import yaml
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 
-# this had for to run every friday since the map updates every thursday
+# run this every friday
 FILE_DATE = dt.datetime.now()
 FILTER_DATE = FILE_DATE - dt.timedelta(days = 1)
 FILE_DATE = FILE_DATE.strftime("%Y%m%d_%H%M%S")
@@ -20,7 +20,7 @@ END_DATE = FILTER_DATE
 with open(BASE_DIR / 'config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
-url = config['us_drought_monitor']['url']
+url = config['endpoints']['us_drought_monitor']['url']
 aws_bucket= config['aws']['aws_bucket']
 aws_key = config['aws']['bronze_keys']['us_drought_monitor']
 aws_key = aws_key.format(file_date=FILE_DATE)
@@ -78,14 +78,13 @@ def upload_to_s3(json_data):
 
 
 
-#example usage
+#run
 if __name__== "__main__":
     data = extract_drought_data(drought_url)
     if data:
         try:
             upload_to_s3(data)
-            print("example usage worked!")
         except Exception as e:
             print (f'{e}')
     else:
-        print ("example usage failed!")
+        raise

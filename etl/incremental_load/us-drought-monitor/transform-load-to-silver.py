@@ -87,7 +87,7 @@ def load_to_iceberg(df, database, table_name):
         full_table_path = f"glue_catalog.{database}.{table_name}"
         logger.info(f"Writing data to {full_table_path}")
 
-        # Note: Added fanout.enabled just like the weather job for stability
+        
         df.writeTo(full_table_path) \
             .using("iceberg") \
             .partitionedBy("year") \
@@ -100,7 +100,7 @@ def load_to_iceberg(df, database, table_name):
         logger.error("error on creating db/writing table", exc_info=True)
 
 
-#example usage
+#run
 if __name__ == "__main__":
     df_bronze = extract_bronze()
     df_silver = transform_s3_data(df_bronze)

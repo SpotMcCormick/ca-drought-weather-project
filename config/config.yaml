@@ -1,6 +1,9 @@
-us_drought_monitor:
-  url: https://usdmdataservices.unl.edu/api/CountyStatistics/GetDSCI?aoi=CA&startdate={start_date}&enddate={end_date}&statisticsType=1
-#aws paths
+endpoints:
+  us_drought_monitor:
+    url: https://usdmdataservices.unl.edu/api/CountyStatistics/GetDSCI?aoi=CA&startdate={start_date}&enddate={end_date}&statisticsType=1
+  ca_gis:
+    url: https://data.ca.gov/dataset/e212e397-1277-4df3-8c22-40721b095f33/resource/b0007416-a325-4777-9295-368ea6b710e6/download/ca_counties.zip
+  #aws paths
 aws:
   aws_bucket: drought-data-lake
   bronze_keys:

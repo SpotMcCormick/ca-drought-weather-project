@@ -109,7 +109,7 @@ def load_to_iceberg(df, database, table_name):
         logger.error(f"error loading to iceberg: {e}", exc_info=True)
         return False
 
-#example useage
+#usage
 if __name__ == "__main__":
     gdf_bronze = extract_bronze()
     df_silver = transform_silver(gdf_bronze)
