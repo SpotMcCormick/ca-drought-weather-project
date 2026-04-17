@@ -148,7 +148,7 @@ def load_to_iceberg(df, database, table_name):
             .partitionedBy("county_name", "year") \
             .tableProperty("write.format.default", "parquet") \
             .tableProperty("write.spark.fanout.enabled", "true") \
-            .createOrReplace()
+            .append()
 
         logger.info("Write complete.")
 
