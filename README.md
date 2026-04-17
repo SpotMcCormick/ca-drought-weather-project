@@ -1,47 +1,58 @@
 # California Drought & Weather Correlation Tool
 
 ## About the project
-Welcome to my other project of weather and drought data. I am going back to my home state of CA and using data sources.  
-I wanted to push my data engineering skills, so I decided to go crazy with the most popular tools in the data stack.  
-With my recent study of data lake architecture I decided to make a data lakehouse. I thought it was the perfect opportunity to try out these skills I have leared. 
 
-The project is still a work in progress so be sure to keep checking back in. I will have updates below. 
+I'm a data engineer and analyst — currently contracted at a startup and working full time at a utility company where I build pipelines and dashboards day to day. I built this project to push myself into the AWS ecosystem and get hands on with the tools I kept seeing in job descriptions.
 
-I am using medallion architecture so we have a bronze layer (stores all raw data as is), a silver layer (treating this like a staging area), and a gold layer(our semantic model).
- ### Bronze Layer
-First off I am extracting raw data through python via API's and storing that data in an aws S3 bucket. 
+I went with a full data lakehouse setup because I had been studying medallion architecture and wanted to actually build one instead of just reading about it. The domain made sense to me — CA drought data is publicly available, interesting, and has real stakes.
 
-Data sources:   
+The project is still a work in progress so keep checking back. Updates are at the bottom.
+
+**Dashboard**: [CA County Drought & Weather Correlation Tool](https://public.tableau.com/app/profile/jeremy.mccormick/viz/CACountyDroughtAndWeatherCorrelationTool/Dashboard#1)
+
+---
+
+## How it works
+
+Three data sources feed into a bronze → silver → gold pipeline:
+
+**Bronze** — raw data lands in S3 as-is. No transformation, just storage.
+
+Data sources:  
 https://droughtmonitor.unl.edu/DmData/DataDownload/WebServiceInfo.aspx  
-https://data.ca.gov/dataset/ca-geographic-boundaries
+https://data.ca.gov/dataset/ca-geographic-boundaries  
+https://dev.meteostat.net/ (python library, not an API)
 
-The only data I am not using from an API is the meteostat library  
-https://dev.meteostat.net/
+**Silver** — data gets pulled from bronze, lightly cleaned and typed, then written into Apache Iceberg tables backed by S3 and cataloged in AWS Glue. Iceberg gives me schema enforcement, ACID transactions, and time travel which is nice to have for environmental data that changes week to week.
 
-### Silver Layer
+**Gold** — DBT models running against Athena join everything together into something a BI tool can actually use. This is what powers the Tableau dashboard.
 
-After the data is extracted i then extract it again from the s3 bucket do minimal transformations and turn it into an iceberg table format
+---
 
-### Gold Layer
-After all the data is transformed and staged in the silver layer I use DBT to make an analytical view for our gold sematic layer with an MVP of a tableau dashboard.  
-**Dashboard Link**:
-https://public.tableau.com/app/profile/jeremy.mccormick/viz/CACountyDroughtAndWeatherCorrelationTool/Dashboard#1
+## Infrastructure
 
-All in all this has been a great project to learn, grow, and sharpen my skills as a data professional. 
+I self hosted the entire Airflow setup on my home server running in Docker Compose — webserver, scheduler, and Postgres metadata DB all containerized. No managed service, just a box in my house running pipelines 24/7. Three DAGs handle the scheduling for each data source:
 
-**Tools used**  
-Python  
-Pyspark  
-Airflow  
-DBT  
-AWS Glue  
-AWS Athena  
-Apache Iceberg  
+| DAG | Schedule |
+|---|---|
+| `gis_monthly` | 1st of every month |
+| `drought_monitor_friday` | Every Friday |
+| `meteostat_daily` | Every day |
 
-## Updates 
+---
+
+## Tools used
+
+Python · PySpark · Apache Airflow · DBT · AWS S3 · AWS Glue · AWS Athena · Apache Iceberg · Docker · Tableau
+
+---
+
+## Updates
+
 11/18/2025 - Started Github for project  
-12/14/2025 - All initial load scripts ran and in s3  
-12/15/2025 - tested initial load with dbt to make gold layer  
-12/20/2025 - started incremental load scripts  
-1/2/2025 - tested an incremental load script with airflow  
-1/8/2026 - build dashboard off initial load data  
+12/14/2025 - All initial load scripts ran and in S3  
+12/15/2025 - Tested initial load with DBT to make gold layer  
+12/20/2025 - Started incremental load scripts  
+1/2/2026 - Tested an incremental load script with Airflow  
+1/8/2026 - Built dashboard off initial load data  
+4/17/2026 - Dockerized Airflow and deployed to home server, all 3 incremental DAGs running in production
