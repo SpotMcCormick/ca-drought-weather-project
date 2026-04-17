@@ -31,7 +31,7 @@ def extract_bronze():
     '''
     try:
         logger.info("getting data from s3 bucket")
-        response = s3.list_objects_v2(Bucket=aws_bucket, Prefix=prefix)
+        response = s3.list_objects_v2(Bucket=aws_bucket, Prefix=aws_key)
 
         if 'Contents' not in response:
             logger.error(f"No files found at {prefix}")
@@ -115,4 +115,3 @@ if __name__ == "__main__":
     df_silver = transform_silver(gdf_bronze)
     load_to_iceberg(df_silver, 'ca_drought_rain', 'ca_counties')
     spark.stop()
-    print("example usage worked!")

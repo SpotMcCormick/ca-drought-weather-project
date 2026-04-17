@@ -6,7 +6,7 @@ etl/ai-initial-load/
 spark-jars/*.jar
 logs/
 logs/*.log
-.env
+*.env
 .idea/
 .~lock.*
 *.lock
