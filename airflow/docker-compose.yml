@@ -14,7 +14,8 @@ x-airflow-common:
     AIRFLOW__CORE__DEFAULT_TIMEZONE: "UTC"
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
     PYTHONPATH: /opt/project
-    AWS_DEFAULT_REGION: us-west-2
+    AWS_DEFAULT_REGION: us-east-2
+    AWS_REGION: us-east-2
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
