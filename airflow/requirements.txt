@@ -3,6 +3,6 @@ awswrangler==3.9.1
 requests==2.32.3
 PyYAML==6.0.2
 meteostat==1.6.8
-pandas==2.2.2
+pandas==2.1.4
 geopandas==1.0.1
 pyspark==3.5.2
