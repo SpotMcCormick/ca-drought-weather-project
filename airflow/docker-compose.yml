@@ -20,14 +20,15 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ../:/opt/project
+    - /home/spotmccormick/ca-drought-weather-project:/opt/project
     - ~/.aws:/home/airflow/.aws:ro
     - ./requirements.txt:/requirements.txt:ro
-    - /opt/java-11:/opt/java-11:ro    
-
+    - /opt/java-11:/opt/java-11:ro
+    - /home/spotmccormick/.meteostat:/home/airflow/.meteostat
   depends_on:
     postgres:
       condition: service_healthy
+
 services:
   postgres:
     image: postgres:16

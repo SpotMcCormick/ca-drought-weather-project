@@ -1,1 +1,5 @@
-select * from dm_drought_weather_analytics
+select max(date)
+from ca_historic_weather
+
+;
+select * from ca_counties
