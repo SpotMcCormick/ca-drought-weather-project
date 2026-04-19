@@ -6,6 +6,8 @@ import boto3
 from pathlib import Path
 import yaml 
 
+logging.basicConfig(level=logging.INFO) 
+
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 

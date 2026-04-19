@@ -5,6 +5,7 @@ from pyspark.sql.functions import col, to_date, year
 import yaml 
 from pathlib import Path
 
+logging.basicConfig(level=logging.INFO) 
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 

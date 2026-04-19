@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 from etl.spark_config import get_spark_session
 
+logging.basicConfig(level=logging.INFO) 
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 
