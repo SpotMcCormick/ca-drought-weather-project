@@ -9,7 +9,7 @@ from pathlib import Path
 from etl.spark_config import get_spark_session
 import yaml
 
-logging.basicConfig(level=logging.INFO) 
+
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 
@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 spark = get_spark_session("silver-transformation-iceberg")
 
 #params for query
-start = datetime.now() - timedelta(days=3)
-end = datetime.now() - timedelta(days=2) 
+start = datetime.now() - timedelta(days=10)
+end = datetime.now() - timedelta(days=9) 
 
 
 
