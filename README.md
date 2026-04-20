@@ -2,9 +2,9 @@
 
 ## About the project
 
-I'm a data engineer and analyst — currently contracted at a startup and working full time at a utility company where I build pipelines and dashboards day to day. I built this project to push myself into the AWS ecosystem and get hands on with the tools I kept seeing in job descriptions.
+I'm a data engineer and analyst — currently contracted at a startup and working full time at a utility company where I build pipelines and dashboards day to day. I built this project to push myself into the AWS ecosystem and get hands on with the tools I kept seeing in the data space.
 
-I went with a full data lakehouse setup because I had been studying medallion architecture and wanted to actually build one instead of just reading about it. The domain made sense to me — CA drought data is publicly available, interesting, and has real stakes.
+I went with a full data lakehouse setup because I had been reading up on medallion architecture and wanted to build one. The domain made sense to me — CA drought data is publicly available, interesting, and has real stakes.
 
 The project is still a work in progress so keep checking back. Updates are at the bottom.
 
