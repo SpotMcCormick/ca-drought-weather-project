@@ -1,5 +1,5 @@
---4/16
-select *
+--4/9
+select max(date)
 from ca_historic_weather
 
 ;
@@ -12,3 +12,7 @@ GROUP BY date
 ORDER BY date;
 
 delete FROM     ca_historic_weather where 1=1;
+--4/14
+select max(map_date)
+from ca_county_drought; ca_county_drought.county;
+select * from dm_drought_weather_analytics
